@@ -11,10 +11,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const folderPath = path.join(process.cwd(), 'voice-database');
-    const filePath = path.join(folderPath, 'transcript.txt');
 
     // Ensure the directory exists
     fs.mkdirSync(folderPath, { recursive: true });
+
+    const timestamp = Date.now();
+    const filePath = path.join(folderPath, `transcript_${timestamp}.txt`);
 
     // Write the transcript to the file
     fs.writeFileSync(filePath, transcript, 'utf-8');
