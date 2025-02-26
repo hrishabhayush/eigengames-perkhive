@@ -34,6 +34,7 @@ export default function VoiceRecord() {
 
     if (isRecording) {
       recognition.start();
+      setTranscript('');
     } else {
       recognition.stop();
     }
@@ -56,14 +57,13 @@ export default function VoiceRecord() {
         {isRecording ? 'Stop Recording' : 'Start Recording'}
       </button>
       
-      <div className="w-full max-w-md">
-        <div className="p-4 border border-gray-300 rounded bg-white shadow-sm">
-          <p className="text-sm text-gray-500 mb-2">
-            {isRecording ? 'Recording... Speak now' : 'Transcription'}
+      <div className="w-full min-w-100 max-w-6xl">
+        <div className="p-4 border border-gray-300 rounded bg-white shadow-sm max-w-6xl mx-auto">
+          <p className="text-sm text-black-500 mb-2">
+        {isRecording ? 'Recording... Click on stop to record your response' : 'Transcription'}
           </p>
-          
-          <div className="w-full min-h-20 p-3 border border-gray-200 rounded bg-gray-50">
-            {transcript}
+          <div className="w-full min-w-100 p-3 border border-gray-200 rounded bg-gray-50">
+        {transcript}
           </div>
         </div>
       </div>
