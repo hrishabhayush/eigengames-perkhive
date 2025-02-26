@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { saveAs } from 'file-saver';
+import * as fs from 'fs';
+import {FileSaverOptions, saveAs} from 'file-saver';
 
 export default function VoiceRecord() {
   const [isRecording, setIsRecording] = useState(false);
@@ -52,9 +53,21 @@ export default function VoiceRecord() {
     setIsRecording((prev) => !prev);
   };
   
-  const saveTranscriptToFile = (transcript: string) => {
-    const blob = new Blob([transcript], { type: 'text/plain;charset=utf-8' });
-    saveAs(blob, 'voice-database/transcript.txt');
+  /*
+  * Save transcript file to voice-database folder
+  */
+  const saveTranscriptToFile = async (transcript: string) => {
+    const response = await fetch('/api/saveTranscript', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ transcript }),
+    });
+
+    if (!response.ok) {
+      console.error('Failed to save transcript', response);
+    }
   };
 
   return (
