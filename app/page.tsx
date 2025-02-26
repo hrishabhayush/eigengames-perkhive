@@ -86,7 +86,7 @@ export default function App() {
           <div className="flex flex-col items-center mb-6">
             <VoiceRecord />  
           </div>
-          <div className="flex flex-col items-center">
+          {/* <div className="flex flex-col items-center">
             <div className="max-w-2xl w-full">
               <div className="flex flex-col md:flex-row justify-between mt-4">
                 <div className="md:w-1/2 mb-4 md:mb-0 flex flex-col items-center">
@@ -131,7 +131,7 @@ export default function App() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>
