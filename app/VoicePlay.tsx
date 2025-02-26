@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 
-const VoicePlay = forwardRef((props, ref) => {
+const VoicePlay = forwardRef<{ playAudio: () => void }, { audioSrc: string }>(({ audioSrc }, ref) => {
     const audioRef = useRef<HTMLAudioElement>(null);
 
     useImperativeHandle(ref, () => ({
@@ -13,9 +13,15 @@ const VoicePlay = forwardRef((props, ref) => {
         }
     }));
 
+    useEffect(() => {
+        if (audioRef.current && audioSrc) {
+            audioRef.current.src = audioSrc;
+        }
+    }, [audioSrc]);
+
     return (
         <div>
-            <audio ref={audioRef} src='/audio/audio.mp3' />
+            <audio ref={audioRef} />
         </div>
     );
 });

@@ -6,6 +6,7 @@ import VoicePlay from './VoicePlay';
 export default function VoiceRecord() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [audioSrc, setAudioSrc] = useState('');
   const voicePlayRef = useRef<{ playAudio: () => void } | null>(null);
 
   useEffect(() => {
@@ -48,7 +49,8 @@ export default function VoiceRecord() {
 
   const handleRecordButtonClick = async () => {
     if (isRecording) {
-      await saveTranscriptToFile(transcript);
+      const audioFilePath = await saveTranscriptToFile(transcript);
+      setAudioSrc(audioFilePath);
       if (voicePlayRef.current) {
         voicePlayRef.current.playAudio();
       }
@@ -67,7 +69,11 @@ export default function VoiceRecord() {
 
     if (!response.ok) {
       console.error('Failed to save transcript', response);
+      return '';
     }
+
+    const data = await response.json();
+    return data.audioFilePath;
   };
 
   return (
