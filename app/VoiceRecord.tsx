@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { saveAs } from 'file-saver';
 
 export default function VoiceRecord() {
   const [isRecording, setIsRecording] = useState(false);
@@ -45,7 +46,15 @@ export default function VoiceRecord() {
   }, [isRecording]);
 
   const handleRecordButtonClick = () => {
+    if (isRecording) { 
+      saveTranscriptToFile(transcript);
+    }
     setIsRecording((prev) => !prev);
+  };
+  
+  const saveTranscriptToFile = (transcript: string) => {
+    const blob = new Blob([transcript], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, 'voice-database/transcript.txt');
   };
 
   return (
