@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import * as fs from 'fs';
-import {FileSaverOptions, saveAs} from 'file-saver';
+import React, { useState, useEffect, useRef } from 'react';
+import VoicePlay from './VoicePlay';
 
 export default function VoiceRecord() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const voicePlayRef = useRef<{ playAudio: () => void } | null>(null);
 
   useEffect(() => {
     if (!('webkitSpeechRecognition' in window)) {
@@ -46,16 +46,16 @@ export default function VoiceRecord() {
     };
   }, [isRecording]);
 
-  const handleRecordButtonClick = () => {
-    if (isRecording) { 
-      saveTranscriptToFile(transcript);
+  const handleRecordButtonClick = async () => {
+    if (isRecording) {
+      await saveTranscriptToFile(transcript);
+      if (voicePlayRef.current) {
+        voicePlayRef.current.playAudio();
+      }
     }
     setIsRecording((prev) => !prev);
   };
-  
-  /*
-  * Save transcript file to voice-database folder
-  */
+
   const saveTranscriptToFile = async (transcript: string) => {
     const response = await fetch('/api/saveTranscript', {
       method: 'POST',
@@ -82,13 +82,15 @@ export default function VoiceRecord() {
       <div className="w-full min-w-100 max-w-6xl">
         <div className="p-4 border border-gray-300 rounded bg-white shadow-sm max-w-6xl mx-auto">
           <p className="text-sm text-black-500 mb-2">
-        {isRecording ? 'Recording... Click on stop to record your response' : 'Transcription'}
+            {isRecording ? 'Recording... Click on stop to record your response' : 'Transcription'}
           </p>
           <div className="w-full min-w-100 p-3 border border-gray-200 rounded bg-gray-50">
-        {transcript}
+            {transcript}
           </div>
         </div>
       </div>
+
+      <VoicePlay ref={voicePlayRef} />
     </div>
   );
 }
