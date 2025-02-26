@@ -12,6 +12,7 @@
     "@coinbase/onchainkit": "latest",
     "@tanstack/react-query": "^5",
     "assemblyai": "^4.9.0",
+    "dotenv": "^16.4.7",
     "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18",
