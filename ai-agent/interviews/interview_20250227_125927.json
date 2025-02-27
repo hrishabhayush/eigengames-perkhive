@@ -1,0 +1,15 @@
+{
+  "timestamp": "20250227_125927",
+  "conversation": [
+    {
+      "question": "How disappointed would you feel if you could no longer use hyperbolic?",
+      "response": "I would be disappointed but I feel like there are other applications that I can use instead of hyperbolic.",
+      "timestamp": "2025-02-27T12:59:12.886288"
+    }
+  ],
+  "summary": {
+    "error": "Failed to generate summary",
+    "timestamp": "2025-02-27T12:59:27.069268"
+  },
+  "website_knowledge": {}
+}

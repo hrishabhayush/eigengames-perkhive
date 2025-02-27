@@ -31,6 +31,10 @@ load_dotenv(override=True)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+class InterviewExitException(Exception):
+    """Custom exception to signal a graceful exit from the interview."""
+    pass
+
 class InterviewAgent:
     def __init__(self, character_config: Dict[str, Any]):
         self.config = character_config
@@ -49,7 +53,6 @@ class InterviewAgent:
         self.current_question_index = 0
         self.follow_up_count = 0
         self.max_follow_ups = 2
-        self.max_follow_ups = 2
         
         # Initialize browser toolkit
         self.browser_toolkit = BrowserToolkit.from_llm(self.llm)
@@ -60,7 +63,6 @@ class InterviewAgent:
             config=BrowserConfig(
                 chrome_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
                 headless=True
-                #debugging_port=9222  # Specify debugging port
             )
         )
         
@@ -79,10 +81,6 @@ class InterviewAgent:
             ]
         ))
         
-        # Initialize Web3
-        #self.w3 = Web3(Web3.HTTPProvider(os.getenv("ETH_RPC_URL")))
-        #self.contract = self.setup_nft_contract()
-
     async def record_voice_input(self) -> str:
         """Record audio from the user and transcribe it to text."""
         if not self.voice_enabled or not self.voice_llm:
@@ -244,6 +242,7 @@ class InterviewAgent:
         response=await self.llm.ainvoke(prompt)
         return response.text()
 
+
     async def conduct_interview(self):
         """Conduct the full interview process."""
         logger.info("Starting interview...")
@@ -251,60 +250,71 @@ class InterviewAgent:
         product_name = "hyperbolic"
         questions = [q.format(product=product_name) for q in self.config["preset_questions"]["initial"]]
         
-        for question in questions:
-            response = await self.ask_question(question)
-            
-            # Analyze vagueness
-            vagueness = await self.yn_vagueness(response, question)
-            print(f"Vagueness: {vagueness}")
-            if "Yes" in vagueness:
-                follow_up_count = 0
-                while follow_up_count < 2:
-                    follow_up = await self.followup_vagueness(response, question)
-                    follow_up_response = await self.ask_question(follow_up)
-                    
+        try:
+            for question in questions:
+                response = await self.ask_question(question)
+                
+                # Analyze vagueness
+                vagueness = await self.yn_vagueness(response, question)
+                print(f"Vagueness: {vagueness}")
+                if "Yes" in vagueness:
+                    follow_up_count = 0
+                    while follow_up_count < 2:
+                        follow_up = await self.followup_vagueness(response, question)
+                        follow_up_response = await self.ask_question(follow_up)
+                        
+                        should_continue_resp = await self.yn_continue(
+                            follow_up_response, follow_up
+                        )
+                        if "Yes" not in should_continue_resp:
+                            break
+                        follow_up_count += 1
+                
+                # Analyze differences
+                differences = await self.yn_difference(response, question)
+                if "Yes" in differences:
+                    for _ in range(3):
+                        follow_up = await self.followup_differences(response, question)
+                        response = await self.ask_question(follow_up)
+                        should_continue_resp = await self.yn_continue(
+                            response, follow_up
+                        )
+                        if "Yes" not in should_continue_resp:
+                            break
+                
+                # Analyze features
+                features = await self.yn_features(response, product_name)
+                if "Yes" in features:
+                    related_features = await self.feature_connections(response, product_name)
+                    print(related_features)
+                    interest_response = await self.ask_question(
+                        "Are you interested in these related features?"
+                    )
                     should_continue_resp = await self.yn_continue(
-                        follow_up_response, follow_up
+                        interest_response, "Are you interested in these related features?"
                     )
                     if "Yes" not in should_continue_resp:
-                      break
-                    follow_up_count += 1
+                        break
             
-            # Analyze differences
-            differences = await self.yn_difference(response, question)
-            if "Yes" in differences:
-                for _ in range(3):
-                    follow_up = await self.followup_differences(response, question)
-                    response = await self.ask_question(follow_up)
-                    should_continue_resp = await self.yn_continue(
-                        response, follow_up
-                    )
-                    if "Yes" not in should_continue_resp:
-                      break
+            await self.save_conversation()
+            logger.info("Interview completed successfully")
             
-            # Analyze features
-            features = await self.yn_features(response, product_name)
-            if "Yes" in features:
-                related_features = await self.feature_connections(response, product_name)
-                print(related_features)
-                interest_response = await self.ask_question(
-                    "Are you interested in these related features?"
-                )
-                should_continue_resp = await self.yn_continue(
-                    interest_response, "Are you interested in these related features?"
-                )
-                if "Yes" not in should_continue_resp:
-                  break
+            # Get wallet address
+            #wallet_address = await self.collect_wallet_address()
+            
+            # Save conversation and mint NFT
+            #await self.mint_nft(wallet_address)
         
-        await self.save_conversation()
-        logger.info("Interview completed successfully")
-        
-        # Get wallet address
-        #wallet_address = await self.collect_wallet_address()
-        
-        # Save conversation and mint NFT
-        #await self.mint_nft(wallet_address)
-      
+        except InterviewExitException:
+            logger.info("Interview exited gracefully by user request")
+        except Exception as e:
+            logger.error(f"Error during interview: {e}")
+            # Try to save conversation even if there was an error
+            try:
+                await self.save_conversation()
+                print("Interview data saved despite error.")
+            except Exception as save_error:
+                logger.error(f"Failed to save conversation after error: {save_error}")
 
     async def ask_question(self, question: str) -> str:
         """Ask a question following style rules."""
@@ -326,25 +336,72 @@ class InterviewAgent:
             print("Press Enter to speak your response, or type to respond with text: ", end="")
             text_input = input()
             
+            # Check if user wants to exit the interview
+            if self.is_exit_command(text_input):
+                await self.handle_exit()
+                raise InterviewExitException("User requested to exit interview")
+            
             if not text_input.strip():
                 # Empty input means use voice
                 response = await self.record_voice_input()
+                # Check if voice response indicates an exit command
+                if self.is_exit_command(response):
+                    await self.handle_exit()
+                    raise InterviewExitException("User requested to exit interview")
+                
                 if not response:
                     # Fallback to text if voice fails
                     response = input("Voice input failed. Please type your response: ")
+                    # Check again if fallback text input is an exit command
+                    if self.is_exit_command(response):
+                        await self.handle_exit()
+                        raise InterviewExitException("User requested to exit interview")
             else:
                 # User typed something, use that as the response
                 response = text_input
         else:
             # Standard text input
             response = input("Your response: ")
+            # Check if user wants to exit the interview
+            if self.is_exit_command(response):
+                await self.handle_exit()
+                raise InterviewExitException("User requested to exit interview")
         
+        # Record the conversation
         self.conversation_history.append({
             "question": question,
             "response": response,
             "timestamp": datetime.now().isoformat()
         })
         return response
+
+    def is_exit_command(self, text: str) -> bool:
+        """Check if the input text indicates a desire to exit the interview."""
+        if not text:
+            return False
+        
+        exit_commands = ["exit", "quit", "end", "stop", "bye", "goodbye", "terminate"]
+        text_lower = text.lower().strip()
+        
+        # Check for exact matches
+        if text_lower in exit_commands:
+            return True
+        
+        # Check for phrases containing exit commands
+        for cmd in exit_commands:
+            if f"want to {cmd}" in text_lower or f"{cmd} interview" in text_lower:
+                return True
+            
+        return False
+
+    async def handle_exit(self):
+        """Handle the exit process gracefully."""
+        print("\nExiting interview. Saving conversation data...")
+        
+        # Save the conversation before exiting
+        await self.save_conversation()
+        
+        print("Thank you for participating in the interview. Goodbye!")
 
     async def collect_wallet_address(self) -> str:
         """Collect and validate Ethereum wallet address."""
