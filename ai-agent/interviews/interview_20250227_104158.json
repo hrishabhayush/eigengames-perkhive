@@ -1,0 +1,35 @@
+{
+  "timestamp": "20250227_104158",
+  "conversation": [
+    {
+      "question": "How disappointed would you feel if you could no longer use hyperbolic?",
+      "response": "a lot",
+      "timestamp": "2025-02-27T10:39:31.896515"
+    },
+    {
+      "question": "Could you explain what aspects of hyperbolic language you find most valuable or enjoyable to use?",
+      "response": "The documentation is really helpful",
+      "timestamp": "2025-02-27T10:39:47.387878"
+    },
+    {
+      "question": "What type of people do you think would most benefit from using hyperbolic?",
+      "response": "College students",
+      "timestamp": "2025-02-27T10:39:58.792584"
+    },
+    {
+      "question": "Why do you think college students in particular would benefit from using hyperbole?",
+      "response": "Because college kids are developing these projects",
+      "timestamp": "2025-02-27T10:40:15.376113"
+    },
+    {
+      "question": "Are you interested in these related features?",
+      "response": "Yes ",
+      "timestamp": "2025-02-27T10:41:57.050608"
+    }
+  ],
+  "summary": {
+    "error": "Failed to generate summary",
+    "timestamp": "2025-02-27T10:41:58.790807"
+  },
+  "website_knowledge": {}
+}
