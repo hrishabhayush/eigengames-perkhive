@@ -17,7 +17,7 @@ import {
 import ArrowSvg from './svg/ArrowSvg';
 import ImageSvg from './svg/Image';
 import OnchainkitSvg from './svg/OnchainKit';
-import VoiceRecord from "./VoiceRecord";
+import AIConversation from "./AIConversation";
 
 const components = [
   {
@@ -78,14 +78,14 @@ export default function App() {
             <ImageSvg />
           </div>
           <div className="flex justify-center mb-6">
-              <OnchainkitSvg className="dark:text-white text-black" />
+              {/* <OnchainkitSvg className="dark:text-white text-black" /> */}
           </div>
-          <p className="text-center mb-6">
-            Click on the mic to start speaking
-          </p>
-          <div className="flex flex-col items-center mb-6">
-            <VoiceRecord />  
-          </div>
+        <p className="text-center mb-6">
+        Start a voice conversation with the AI assistant
+        </p>
+        <div className="flex flex-col items-center mb-6">
+        <AIConversation />
+        </div>
           {/* <div className="flex flex-col items-center">
             <div className="max-w-2xl w-full">
               <div className="flex flex-col md:flex-row justify-between mt-4">

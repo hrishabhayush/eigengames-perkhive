@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-from langchain_openai_voice.utils import amerge  # First import utils to check if the path is correct
+from langchain_openai_voice.utils import amerge
 from langchain_openai_voice import OpenAIVoiceReactAgent
 
 from server.utils import websocket_stream
@@ -19,8 +19,6 @@ from server.tools import TOOLS
 from chatbot import loadCharacters, process_character_config
 import os
 from server.prompt import BASE_INSTRUCTIONS
-from chatbot import loadCharacters, process_character_config
-import os
 
 
 async def websocket_endpoint(websocket: WebSocket):
@@ -67,4 +65,4 @@ app = Starlette(debug=True, routes=routes)
 app.mount("/", StaticFiles(directory="server/src/server/static"), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=3000)
+    uvicorn.run(app, host="localhost", port=8000)
