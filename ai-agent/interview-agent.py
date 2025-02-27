@@ -1,9 +1,10 @@
 import json
 import os
 import asyncio
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Union
 from datetime import datetime
 from dotenv import load_dotenv
+from langchain_openai_voice import OpenAIVoice
 from web3 import Web3
 from langchain_anthropic import ChatAnthropic
 from eth_account import Account
@@ -30,15 +31,24 @@ load_dotenv(override=True)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 class InterviewAgent:
     def __init__(self, character_config: Dict[str, Any]):
         self.config = character_config
         self.conversation_history = []
         self.website_knowledge = {}
         self.llm = ChatAnthropic(model="claude-3-5-sonnet-20241022")
+        # Initialize voice capabilities
+        self.voice_enabled = os.getenv("VOICE_ENABLED", "false").lower() == "true"
+        self.voice_llm = None
+        if self.voice_enabled:
+            self.voice_llm = OpenAIVoice(
+                model=os.getenv("OPENAI_VOICE_MODEL", "gpt-4o"),
+                voice=os.getenv("OPENAI_VOICE", "alloy"),
+                openai_api_key=os.getenv("OPENAI_API_KEY")
+            )
         self.current_question_index = 0
         self.follow_up_count = 0
+        self.max_follow_ups = 2
         self.max_follow_ups = 2
         
         # Initialize browser toolkit
@@ -73,6 +83,47 @@ class InterviewAgent:
         #self.w3 = Web3(Web3.HTTPProvider(os.getenv("ETH_RPC_URL")))
         #self.contract = self.setup_nft_contract()
 
+    async def record_voice_input(self) -> str:
+        """Record audio from the user and transcribe it to text."""
+        if not self.voice_enabled or not self.voice_llm:
+            return ""
+            
+        try:
+            print("\nListening... (Please speak now)")
+            # In a real implementation, this would use a library like sounddevice to record audio
+            # For this example, we'll simulate the recording process
+            audio_file_path = await self.voice_llm.record_audio(seconds=10)
+            transcript = self.voice_llm.transcribe(audio_file_path)
+            print(f"\nTranscribed: {transcript}")
+            return transcript
+        except Exception as e:
+            logger.error(f"Error recording or transcribing audio: {e}")
+            return ""
+
+    async def speak_text(self, text: str) -> None:
+        """Convert text to speech and play it through speakers."""
+        if not self.voice_enabled or not self.voice_llm:
+            return
+            
+        try:
+            print("\nSpeaking response...")
+            # Get audio response from voice LLM
+            audio_response = await self.voice_llm.synthesize_speech(text)
+            
+            # Extract audio data and sampling rate from the response
+            audio_data = audio_response.audio_data
+            sampling_rate = audio_response.sampling_rate
+            
+            # Import sounddevice for audio playback
+            import sounddevice as sd
+            
+            # Play audio data with the correct sampling rate
+            sd.play(audio_data, sampling_rate)
+            sd.wait()  # Wait until audio playback is done
+            
+            print("\n[Voice speaking complete]")
+        except Exception as e:
+            logger.error(f"Error in text-to-speech: {e}")
     async def learn_websites(self):
         """Learn from websites using browser agent."""
         logger.info("Learning from websites...")
@@ -209,9 +260,7 @@ class InterviewAgent:
             if "Yes" in vagueness:
                 follow_up_count = 0
                 while follow_up_count < 2:
-                    print("in vagueness follow up loop")
                     follow_up = await self.followup_vagueness(response, question)
-                    print("follow_up")
                     follow_up_response = await self.ask_question(follow_up)
                     
                     should_continue_resp = await self.yn_continue(
@@ -228,7 +277,7 @@ class InterviewAgent:
                     follow_up = await self.followup_differences(response, question)
                     response = await self.ask_question(follow_up)
                     should_continue_resp = await self.yn_continue(
-                        follow_up_response, follow_up
+                        response, follow_up
                     )
                     if "Yes" not in should_continue_resp:
                       break
@@ -242,7 +291,7 @@ class InterviewAgent:
                     "Are you interested in these related features?"
                 )
                 should_continue_resp = await self.yn_continue(
-                    follow_up_response, follow_up
+                    interest_response, "Are you interested in these related features?"
                 )
                 if "Yes" not in should_continue_resp:
                   break
@@ -264,7 +313,32 @@ class InterviewAgent:
             logger.debug(f"Applying style rule: {rule}")
         
         print(f"\n{question}")
-        response = input("Your response: ")
+        
+        # Speak the question if voice is enabled
+        if self.voice_enabled and self.voice_llm:
+            await self.speak_text(question)
+        
+        # Determine whether to use voice or text input
+        use_voice = self.voice_enabled and self.voice_llm
+        
+        response = ""
+        if use_voice:
+            print("Press Enter to speak your response, or type to respond with text: ", end="")
+            text_input = input()
+            
+            if not text_input.strip():
+                # Empty input means use voice
+                response = await self.record_voice_input()
+                if not response:
+                    # Fallback to text if voice fails
+                    response = input("Voice input failed. Please type your response: ")
+            else:
+                # User typed something, use that as the response
+                response = text_input
+        else:
+            # Standard text input
+            response = input("Your response: ")
+        
         self.conversation_history.append({
             "question": question,
             "response": response,
@@ -391,7 +465,6 @@ class InterviewAgent:
 
     
 
-
 async def main():
     # Load character configuration
     print("Fetching character configuration...")
@@ -399,10 +472,21 @@ async def main():
         character_config = json.load(f)
     print("Character configurations fetched successfully!")
     
+    # Check if voice mode is enabled
+    voice_enabled = os.getenv("VOICE_ENABLED", "false").lower() == "true"
+    if voice_enabled:
+        print("Voice mode ENABLED - you can speak responses and hear questions")
+        print("Make sure you have the required packages: pip install openai sounddevice soundfile numpy")
+        # Check for OPENAI_API_KEY
+        if not os.getenv("OPENAI_API_KEY"):
+            print("WARNING: OPENAI_API_KEY not found in environment variables")
+            print("Voice features require an OpenAI API key")
+            print("Add OPENAI_API_KEY to your .env file or set it in your environment")
 
     # Initialize agent
     print("Initializing agent...")
     agent = InterviewAgent(character_config)
+    print("Agent initialized successfully!")
     print("Agent initialized successfully!")
     
     # Learn from websites

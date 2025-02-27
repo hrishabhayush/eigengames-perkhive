@@ -1,0 +1,45 @@
+{
+  "timestamp": "20250227_104655",
+  "conversation": [
+    {
+      "question": "How disappointed would you feel if you could no longer use hyperbolic?",
+      "response": "I would be a little disappointed but I can use other tools as well",
+      "timestamp": "2025-02-27T10:44:31.352139"
+    },
+    {
+      "question": "What other tools or alternatives would you use instead of hyperbolic, and how would they compare?",
+      "response": "I would use Make.com or Zapier to automate my workflow. It's just that Zapier is web2 and this is web3 where I would get NFTs, which I otherwise would not",
+      "timestamp": "2025-02-27T10:45:15.515353"
+    },
+    {
+      "question": "Which other tools would you typically use instead of hyperbolic, and how do they compare in effectiveness for your needs?",
+      "response": "Zapier, to automate my workflow and it's helpful becasue they are essentially doing the same thing. It's just that it's hard to navigate through the other tools",
+      "timestamp": "2025-02-27T10:45:48.483538"
+    },
+    {
+      "question": "What type of people do you think would most benefit from using hyperbolic?",
+      "response": "College students",
+      "timestamp": "2025-02-27T10:45:57.519807"
+    },
+    {
+      "question": "Why do you think college students in particular would benefit from hyperbolic discounting?",
+      "response": "Students are building projects all the time",
+      "timestamp": "2025-02-27T10:46:14.974425"
+    },
+    {
+      "question": "Why do you think college students in particular would benefit from hyperbolic discounting?",
+      "response": "students are building projects and they would need discount to build a lot of them",
+      "timestamp": "2025-02-27T10:46:34.292313"
+    },
+    {
+      "question": "Are you interested in these related features?",
+      "response": "I will be",
+      "timestamp": "2025-02-27T10:46:53.030721"
+    }
+  ],
+  "summary": {
+    "error": "Failed to generate summary",
+    "timestamp": "2025-02-27T10:46:55.844796"
+  },
+  "website_knowledge": {}
+}
