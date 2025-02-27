@@ -1,0 +1,35 @@
+{
+  "timestamp": "20250227_031930",
+  "conversation": [
+    {
+      "question": "How disappointed would you feel if you could no longer use hyperbolic?",
+      "response": "y",
+      "timestamp": "2025-02-27T03:17:44.484239"
+    },
+    {
+      "question": "Could you explain what makes you feel particularly disappointed about not being able to use hyperbole in your communication?",
+      "response": "I would be really sad and crying",
+      "timestamp": "2025-02-27T03:17:55.358867"
+    },
+    {
+      "question": "What type of people do you think would most benefit from using hyperbolic?",
+      "response": "teacher and students",
+      "timestamp": "2025-02-27T03:18:02.780602"
+    },
+    {
+      "question": "Can you explain how you think teachers and students would specifically use hyperbole in their interactions or work?",
+      "response": "They run machine learning operations",
+      "timestamp": "2025-02-27T03:18:16.948020"
+    },
+    {
+      "question": "Are you interested in these related features?",
+      "response": "yea",
+      "timestamp": "2025-02-27T03:19:27.127153"
+    }
+  ],
+  "summary": {
+    "error": "Failed to generate summary",
+    "timestamp": "2025-02-27T03:19:30.303960"
+  },
+  "website_knowledge": {}
+}

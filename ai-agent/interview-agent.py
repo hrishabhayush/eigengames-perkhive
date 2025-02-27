@@ -129,12 +129,12 @@ class InterviewAgent:
         llm_response = await self.llm.ainvoke(prompt)
         return llm_response.text()
 
-    async def yn_features(self, response: str) -> Dict[str, str]:
+    async def yn_features(self, response: str, product: str) -> Dict[str, str]:
         """Analyze features mentioned in response."""
         prompt = f"""
         User response: {response}
-
-        Are there any features that are commonly used alongside any features mentioned in this response?
+        Using my knowledge of {product},
+        are there any features on {product} that are commonly used alongside any features mentioned in this response?
         Return your answer as a yes or no answer
         """
         llm_response = await self.llm.ainvoke(prompt)
@@ -182,13 +182,16 @@ class InterviewAgent:
         follow_up = await self.llm.ainvoke(prompt)
         return follow_up.text().strip()
 
-    async def feature_connections(self, feature: str) -> str:
+    async def feature_connections(self, response: str, product: str) -> str:
         """Ask LLM about related features."""
         prompt = f"""
-        Based on your knowledge of {self.config['name']}, what features do users typically use alongside {feature}?
+        Based on this response: "{response}" by the user, look at the my knowledge of {product} and what
+        features do this type user typically use alongside with on {product}?
         Explain why these combinations are valuable.
+        Answer in a concise paragraph, keep in mind the user's demographic hinted from the response
         """
-        return await self.llm.ainvoke(prompt).text()
+        response=await self.llm.ainvoke(prompt)
+        return response.text()
 
     async def conduct_interview(self):
         """Conduct the full interview process."""
@@ -211,11 +214,11 @@ class InterviewAgent:
                     print("follow_up")
                     follow_up_response = await self.ask_question(follow_up)
                     
-                    should_continue_resp = await self.should_continue(
-                        f"Question: {follow_up}\nResponse: {follow_up_response}"
+                    should_continue_resp = await self.yn_continue(
+                        follow_up_response, follow_up
                     )
-                    if "no" in should_continue_resp:
-                        break
+                    if "Yes" not in should_continue_resp:
+                      break
                     follow_up_count += 1
             
             # Analyze differences
@@ -224,25 +227,25 @@ class InterviewAgent:
                 for _ in range(3):
                     follow_up = await self.followup_differences(response, question)
                     response = await self.ask_question(follow_up)
-                    should_continue_resp = await self.should_continue(
-                        f"Exploring unexpected response: {response}"
+                    should_continue_resp = await self.yn_continue(
+                        follow_up_response, follow_up
                     )
-                    if "no" in should_continue_resp:
-                        break
+                    if "Yes" not in should_continue_resp:
+                      break
             
             # Analyze features
-            features = await self.yn_features(response)
-            if "Yes" in features and "none mentioned" not in features["yes/no"]:
-                related_features = await self.feature_connections(features["yes/no"])
-                print(f"\nInteresting point! {related_features}")
+            features = await self.yn_features(response, product_name)
+            if "Yes" in features:
+                related_features = await self.feature_connections(response, product_name)
+                print(related_features)
                 interest_response = await self.ask_question(
                     "Are you interested in these related features?"
                 )
-                should_continue_resp = await self.should_continue(
-                    f"Feature exploration: {interest_response}"
+                should_continue_resp = await self.yn_continue(
+                    follow_up_response, follow_up
                 )
-                if "no" in should_continue_resp:
-                    continue
+                if "Yes" not in should_continue_resp:
+                  break
         
         await self.save_conversation()
         logger.info("Interview completed successfully")
