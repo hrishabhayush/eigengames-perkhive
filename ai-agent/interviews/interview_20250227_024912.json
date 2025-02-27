@@ -1,0 +1,30 @@
+{
+  "timestamp": "20250227_024912",
+  "conversation": [
+    {
+      "question": "How disappointed would you feel if you could no longer use hyperbolic?",
+      "response": "I would feel really disappointed as I use hyperbolic to build my startup",
+      "timestamp": "2025-02-27T02:48:25.248640"
+    },
+    {
+      "question": "What type of people do you think would most benefit from using hyperbolic?",
+      "response": "exit",
+      "timestamp": "2025-02-27T02:48:54.320973"
+    },
+    {
+      "question": "What is the main benefit you receive from hyperbolic?",
+      "response": "y",
+      "timestamp": "2025-02-27T02:49:01.673473"
+    },
+    {
+      "question": "How can we improve hyperbolic for you?",
+      "response": "c",
+      "timestamp": "2025-02-27T02:49:08.894318"
+    }
+  ],
+  "summary": {
+    "error": "Failed to generate summary",
+    "timestamp": "2025-02-27T02:49:12.842851"
+  },
+  "website_knowledge": {}
+}
