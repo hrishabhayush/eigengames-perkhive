@@ -4,6 +4,8 @@ import asyncio
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime
 from dotenv import load_dotenv
+from server.src.langchain_openai_voice_module import OpenAIVoice
+from web3 import Web3
 from langchain_openai_voice import OpenAIVoice
 from web3 import Web3
 from langchain_anthropic import ChatAnthropic
